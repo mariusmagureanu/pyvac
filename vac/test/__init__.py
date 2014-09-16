@@ -1,3 +1,3 @@
 __author__ = 'mariusmagureanu'
 import sys
-sys.path.append('../entities/*')
+sys.path.append('../dao/*')

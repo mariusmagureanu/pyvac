@@ -5,5 +5,5 @@ from mongoengine import StringField
 
 class Group(Document, BaseEntity):
 
-    name = StringField(max_length=255, required=True, default='Rambo')
+    name = StringField(max_length=255, required=True, default='Entity_Name')
     description = StringField(max_length=255, required=False)

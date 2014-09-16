@@ -4,7 +4,7 @@ from mongoengine import StringField
 
 
 class Node(Document, BaseEntity):
-    name = StringField(max_length=255, required=True)
+    name = StringField(max_length=255, required=True, default='Entity_Name')
     description = StringField(max_length=255, required=False)
     agent_host = StringField(max_length=128, required=True)
     agent_username = StringField(max_length=255, required=True)
