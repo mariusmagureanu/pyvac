@@ -63,5 +63,12 @@ class BaseFacade(object):
         """
         return len(self.__model__.objects)
 
+    def all(self):
+        """
+
+        :return:
+        """
+        return self.__model__.objects.to_json()
+
 
 
