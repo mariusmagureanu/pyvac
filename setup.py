@@ -39,7 +39,7 @@ install_requires = [
 setup(
     name='VAC',
     version=version,
-    description='VAC',
+    description='vac',
     long_description='',
     # Get strings for classifiers from
     # http://pypi.python.org/pypi?%3Aaction=list_classifiers:
