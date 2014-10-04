@@ -1,3 +1,5 @@
+Pyvac is a noob python project meant to interact with Varnish environment. Specifically it will directly rely on varnish agent instances in order to control varnish caches.
+
 # README #
 
 This README would normally document whatever steps are necessary to get your application up and running.
