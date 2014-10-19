@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from base_facade import BaseFacade
-from vac.dao.entities.vcl import Vcl
+from vac.dao.entities.model import Vcl
 
 
 class VclFacade(BaseFacade):

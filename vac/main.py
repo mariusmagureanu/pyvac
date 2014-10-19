@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from vac.dao.mongo.connector import connect_to_mongo
-from vac.dao.entities.user import User
+from vac.dao.entities.model import User
 from vac.dao.facade.user_facade import UserFacade
 from test.dao.base_test import BaseDaoTest
 from vac.web.base_resource import run_flask
@@ -24,4 +24,3 @@ def test_mongo():
 if __name__ == '__main__':
     connect_to_mongo()
     run_flask()
-    #AgentTool().panic

@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from base_test import BaseDaoTest
-from vac.dao.entities.ban import Ban
+from vac.dao.entities.model import Ban
 from vac.dao.facade.ban_facade import BanFacade
 
 

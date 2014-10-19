@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from base_test import BaseDaoTest
-from vac.dao.entities.message import Message
+from vac.dao.entities.model import Message
 from vac.dao.facade.message_facade import MessageFacade
 
 

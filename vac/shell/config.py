@@ -6,6 +6,7 @@ import os
 
 log = logging.getLogger('frontend.config')
 
+
 def format_loglevel(level):
     if isinstance(level, str):
         if level.isdigit():
@@ -19,18 +20,16 @@ def format_loglevel(level):
 
 
 class EngineConfig(object):
-    '''An object that holds the config for the current TNG session.
+    '''An object that holds the config for the current VAC session.
     '''
     def __init__(self):
         self._config_data = {
             'defines': {},
-            # The logdir the user want to create may already exist so we need
-            # to differentiate:
             'desired_logdir': None,
             'logdirectory': None,
             'overwrite_logdir': False,
             'loglevel': logging.INFO,
-            'tng_version_info': None,
+            'vacpi_version_info': None,
             'crash_on_boot': True,
             'setupfile': None,
             'runfile': None,
@@ -42,13 +41,6 @@ class EngineConfig(object):
             'username': 'marius',
             'shell': 'ipython',
             'color_output': True,
-            'run_dashboard_server': False,
-            'default_domain': 'domain.com',
-            # This is used to make sure TNG does not try
-            # to connect to the device during tng.run, but only
-            # later when the services are needed. Useful for using
-            # TNG to ensure a device is in fact up.
-            'prohibit_connection_at_device_creation': False,
         }
         #self.load_user_config()
 
@@ -78,7 +70,7 @@ class EngineConfig(object):
         pass
         '''Loads default user configuration.
 
-        :parameter config_file: user config file (default: "~/.tngpi")
+        :parameter config_file: user config file (default: "~/.vacpi")
         '''
         #user_defaults = UserConfig(config_file).get_tng_config()
         #self.update_current_config(user_defaults)
@@ -102,22 +94,22 @@ class EngineConfig(object):
         return os.path.join(*logpaths)
 
     def get_tng_version_info(self):
-        '''Returns a dictionary of TNG version info.
+        '''Returns a dictionary of VAC Pi version info.
 
         For example dict(version='v3.1.7-2-gdf4e1ec',
                          date='2012-08-31 00:21:24 +0100')
         '''
-        if self['tng_version_info'] is None:
+        if self['vacpi_version_info'] is None:
             try:
-                self['tng_version_info'] = '1.0'
+                self['vacpi_version_info'] = '1.0'
             except Exception as e:
-                log.debug('Failed to fetch tngpi git revision: %s', e)
-                self['tng_version_info'] = dict(
+                log.debug('Failed to fetch vacpi git revision: %s', e)
+                self['vacpi_version_info'] = dict(
                     version='Unknown', date='Unknown')
-        return self['tng_version_info']
+        return self['vacpi_version_info']
 
     def get_tng_version(self):
-        '''Returns the TNG version (or 'Unknown' if no version available).
+        '''Returns the VAC version (or 'Unknown' if no version available).
         '''
         version_info = self.get_tng_version_info()
         return version_info

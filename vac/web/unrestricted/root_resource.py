@@ -1,7 +1,7 @@
 __author__ = 'mariusmagureanu'
 from flask import Blueprint, request, Response, json
 from vac.dao.facade.node_facade import NodeFacade
-from vac.dao.entities.node import Node
+from vac.dao.entities.model import Node
 
 
 root_blueprint = Blueprint('root', __name__)
@@ -16,7 +16,7 @@ def register_node():
     dash = json_agent['dash-n']
     user = json_agent['user']
     host = request.headers['Host']
-    n = Node(agent_host=port,agent_username=user, agent_password=password, dash_n=dash, name='localhost:'+port)
+    n = Node(agent_host=port, agent_username=user, agent_password=password, dash_n=dash, name='localhost:'+port)
     __node_facade.save(n)
     return Response('Ok', 201, mimetype='text/plain')
 

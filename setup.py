@@ -32,7 +32,7 @@ install_requires = [
     'txAMQP',
     'pep8>=1.4.6',
     'netifaces',
-    'crochet>=1.0.0'
+    'crochet>=1.0.0', 'mongoengine'
 ]
 
 

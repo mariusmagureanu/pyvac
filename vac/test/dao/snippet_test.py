@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from base_test import BaseDaoTest
-from vac.dao.entities.snippet import Snippet
+from vac.dao.entities.model import Snippet
 from vac.dao.facade.snippet_facade import SnippetFacade
 
 

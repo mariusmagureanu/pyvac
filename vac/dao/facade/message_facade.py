@@ -1,5 +1,5 @@
 __author__ = 'mariusmagureanu'
-from vac.dao.entities.message import Message
+from vac.dao.entities.model import Message
 from base_facade import BaseFacade
 
 

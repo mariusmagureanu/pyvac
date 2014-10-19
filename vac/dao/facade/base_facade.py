@@ -36,7 +36,7 @@ class BaseFacade(object):
         :param object_id:
         :return:
         """
-        return  self.__model__.objects.get(id=object_id)
+        return self.__model__.objects.get(id=object_id)
 
     def find_based_on_field(self, field_name, field_value):
         """
@@ -56,6 +56,15 @@ class BaseFacade(object):
         """
         return self.__model__.objects.get(**{field_name: field_value})
 
+    def delete_by_field(self, field_name, field_value):
+        """
+
+        :param field_name:
+        :param field_value:
+        :return:
+        """
+        return self.__model__.objects(**{field_name: field_value}).delete()
+
     def count(self):
         """
 
@@ -68,7 +77,10 @@ class BaseFacade(object):
 
         :return:
         """
-        return self.__model__.objects.to_json()
+        return self.__model__.objects
+
+    def clear_all(self):
+        self.__model__.drop_collection()
 
 
 

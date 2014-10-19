@@ -1,14 +1,10 @@
-from vac.web.base_resource import run_flask
-
 __author__ = 'mariusmagureanu'
 #!/usr/bin/env python
 import traceback
 import logging
 import code
 import vac
-from vac.web.varnish import agent_tool
-from twisted.internet import reactor
-from vac.dao.facade.user_facade import UserFacade
+from vac.web.varnish.agent_tool import AgentTool
 from engine import get_engine, run
 
 
@@ -38,7 +34,7 @@ class VacShell(object):
         if shell_name == 'ipython':
             self.monkey_patch_ipython_history_manager()
             def make_shell():
-                # TODO: restrict user namespace to just 'tng' etc
+                # TODO: restrict user namespace to just 'vac' etc
                 try:
                     import IPython.Shell
                     shell = IPython.Shell.IPShellEmbed(argv='')

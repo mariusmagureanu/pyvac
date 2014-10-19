@@ -1,7 +1,7 @@
 __author__ = 'mariusmagureanu'
 from base_test import BaseDaoTest
 from vac.dao.facade.group_facade import GroupFacade
-from vac.dao.entities.group import Group
+from vac.dao.entities.model import Group
 
 
 class GroupDaoTest(BaseDaoTest):

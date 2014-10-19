@@ -1,29 +1,21 @@
 __author__ = 'mariusmagureanu'
 import os
 import sys
-import time
 import logging
 import colorama
-import crochet
 
 from cStringIO import StringIO
 from config import EngineConfig
 from vac.dao.mongo.connector import connect_to_mongo
-from vac.web.base_resource import run_flask
-from twisted.internet import reactor
+from vac.web.base_resource import start_flask, stop_flask
 
 
 log = logging.getLogger('vac')
 
 
 class Engine(object):
-    '''The component responsible for starting and stopping the frontend
-    and backend
 
-    Note: this object also holds the proxy and the backend service.
-
-    '''
-    def __init__(self, reactor=reactor):
+    def __init__(self):
         self.running = False
         self.config = EngineConfig()
         self._exit_status = None
@@ -59,43 +51,9 @@ class Engine(object):
         colorama.init()
         if self.config['store_logs']:
             self._make_log_dir()
-            #self._setup_targeted_log_files(self.config['logdirectory'])
             eventlog_file = self.get_fp('eventlog.log')
         else:
             eventlog_file = StringIO()
-        '''
-        self.state.eventlog = eventlog.EventLog(eventlog_file)
-        stdout_handler = logger.enable_first_run_logging(
-            self.config)
-        self.state.stdout_handler = stdout_handler
-        self.state.logtransport = logger.enable_standard_logging(
-            self.config)
-        if self.config['logdirectory']:
-            log.info('TNG logdirectory=%r' % os.path.abspath(
-                self.config['logdirectory']))
-
-    def _setup_targeted_log_files(self, logdirectory):
-        statemachine = LogHandler(logdirectory, 'statemachine.log')
-        logging.getLogger('statemachine').addHandler(statemachine)
-        statemachine.setLevel(logging.DEBUG)
-        protocol = LogHandler(logdirectory, 'protocol.log')
-        logging.getLogger('protocol').addHandler(protocol)
-        protocol.setLevel(logging.DEBUG)
-        tng = LogHandler(logdirectory, 'tng_frontend.log')
-        logging.getLogger('tng').addHandler(tng)
-        tng.setLevel(logging.DEBUG)
-        backend_ = LogHandler(logdirectory, 'backend.log')
-        logging.getLogger('backend').addHandler(backend_)
-        backend_.setLevel(logging.DEBUG)
-        feedback = LogHandler(logdirectory, 'feedback.log')
-        logging.getLogger('feedback').addHandler(feedback)
-        logging.getLogger('Call.Signal').addHandler(feedback)
-        logging.getLogger('statemachine').addHandler(feedback)
-        feedback.setLevel(logging.DEBUG)
-        twisted = LogHandler(logdirectory, 'twisted.log')
-        logging.getLogger('twisted').addHandler(twisted)
-        twisted.setLevel(logging.DEBUG)
-'''
 
     def teardown_logging(self):
         loggers = [logging.root]
@@ -103,8 +61,8 @@ class Engine(object):
             log.info('TNG logdirectory={!r}'.format(
                 os.path.abspath(self.config['logdirectory'])))
             targeted_loggers = [logging.getLogger(logname) for logname in (
-                'statemachine', 'protocol', 'tng', 'backend',
-                'feedback', 'Call.Signal', 'twisted')]
+                'statemachine', 'protocol', 'vac', 'backend',
+                'feedback')]
             loggers.extend(targeted_loggers)
         # This is the last moment a log will be available:
         log.info('Goodbye!')
@@ -122,7 +80,7 @@ class Engine(object):
             return os.path.splitext(
                 os.path.basename(self.config['runfile']))[0]
         else:
-            return 'TNGPi'
+            return 'VacPi'
 
     def set_exit_status(self, reason=None):
         '''Sets the value which the engine will pass to sys.exit once it's done
@@ -130,58 +88,22 @@ class Engine(object):
         '''
         self._exit_status = reason
 
-    def save_scripts(self):
-        scriptfolder = os.path.join(self.config['logdirectory'], 'scriptfiles')
-        if not os.path.exists(scriptfolder):
-            os.makedirs(scriptfolder)
-        runfile_copy = self.get_fp('scriptfiles', 'runfile')
-        if self.config['runfile'] and os.path.exists(self.config['runfile']):
-            runfile_data = open(self.config['runfile']).read()
-            runfile_copy.write(runfile_data)
-        runfile_copy.close()
-        setupfile_copy = self.get_fp('scriptfiles', 'setupfile')
-        if self.config['setupfile'] and os.path.exists(
-                self.config['setupfile']):
-            setupfile_data = open(self.config['setupfile']).read()
-            setupfile_copy.write(setupfile_data)
-        setupfile_copy.close()
-
     def start(self, runtime_config=None):
         connect_to_mongo()
-
         self.config.update_current_config(runtime_config)
         if self.running:
-            #If we have already started we just reconfigure
-            #and return control
             return
         self.initialise_logging()
-        log.info('Starting TNG Pi version=%r', self.config.get_tng_version())
-        if self.config['store_logs']:
-            self.save_scripts()
-        #initialise_device_types_and_interfaces()
-        device_setups = None
-        if self.config['setupfile'] is not None:
-            try:
-                pass
-               # device_setups = setupfile_parser.parse_setupfile(
-               #     self.config['setupfile'],
-               #     self.device_factory.device_names)
-            except Exception as e:
-                log.exception('Failed to parse setup file: {}'.format(e))
-                sys.exit(1)
-        if device_setups:
-            crochet.wait_for_reactor(
-                self.device_factory.create_devices)(device_setups)
+        log.info('Starting Vac Pi version=%r', self.config.get_tng_version())
         self.running = True
-        #run_flask()
+        start_flask()
 
     def stop(self):
         if not self.running:
             return self._exit_status
-        #self.state.stop_time = time.time()
-        #crochet.wait_for_reactor(self.device_factory.cleanup)()
-        #self.teardown_logging()
         self.running = False
+        stop_flask()
+
         return self._exit_status
 
     def perform_exit(self):
@@ -198,56 +120,9 @@ class Engine(object):
             'runfile': self.config['runfile'],
             'defines': self.config['defines']}
 
-    def log_to_devices(self, message):
-        '''This method is used to put general TNG log notifications out to all
-        devices in a test. **Use sparingly!**
-
-        :parameter message: The string to log on all the devices.
-        '''
-        devices = self.device_factory.devices
-        if devices:
-            from tng.api import concurrent
-            concurrent(
-                [self._get_try_log_to_device(
-                    device, message) for device in devices],
-                raise_on_error=False)
-
-    def _get_try_log_to_device(self, device, message):
-        def try_log_to_device():
-            try:
-                device.log_to_device(message)
-            except Exception:
-                log.debug(
-                    'WARNING: Could not log message to device {!r}'.format(
-                        device))
-        return try_log_to_device
-
 
 def run(function, config=None, args=None, kwargs=None, engine=None):
-    '''The main entry point for running your code within a running |TNG|
-    :class:`~tng.frontend.engine.Engine`.
 
-    :parameter function: the function to run
-    :parameter config: dictionary of runtime configuration items as parsed by
-        the ``tng.frontend.option_parser``
-    :parameter args: optional positional arguments to pass to ``function``
-    :parameter kwargs: optional keyword arguments to pass to ``function``
-
-    Before executing your function |tng| will be started. This involves (if
-    necessary) creating the test log directory, configuring logging, parsing
-    any setup file and starting the twisted reactor in the backend. |tng| then
-    creates all required devices using any setup parameters supplied.
-
-    Once |tng|'s :class:`~tng.frontend.engine.Engine` is running, we then call
-    your function with the supplied positional and keyword value arguments, and
-    handle any exceptions raised (including ``KeyboardInterrupt`` from
-    ``ctrl+c``).
-
-    .. seealso::
-
-        :func:`tng.api.runner` - wrapper for invoking unittest-based
-        tests via :func:`tng.run`.
-    '''
     engine = engine or get_engine()
     engine.start(config)
     args = args or []
@@ -282,5 +157,4 @@ def get_engine():
 def get_engine_proxy():
     global _engine_proxy
     if not _engine_proxy:
-        #_engine_proxy = TwistedProxy(get_engine())
         return _engine_proxy

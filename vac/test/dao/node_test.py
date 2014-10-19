@@ -1,7 +1,7 @@
 __author__ = 'mariusmagureanu'
 from base_test import BaseDaoTest
 from vac.dao.facade.node_facade import NodeFacade
-from vac.dao.entities.node import Node
+from vac.dao.entities.model import Node
 
 
 class NodeDaoTest(BaseDaoTest):
@@ -10,7 +10,7 @@ class NodeDaoTest(BaseDaoTest):
 
     def setUp(self):
         super(self.__class__, self).setUp()
-        node = Node(description="N/A", agent_host="127.0.0.1", agent_username="vac",
+        node = Node(description="N/A", agent_host="6085", agent_username="vac",
                     agent_password="vac", dash_n="N/A")
         super(self.__class__, self)._set_model(node, NodeFacade())
 
