@@ -3,7 +3,7 @@ from twisted.internet import defer, reactor
 from twisted.web.client import Agent
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import Protocol
-
+from colorama import init, Fore, Back, Style
 import time
 import crochet
 import json
@@ -39,6 +39,7 @@ class AgentTool(object):
     def __init__(self):
         from vac.dao.facade.node_facade import NodeFacade
         from vac.dao.facade.group_facade import GroupFacade
+        init()
         self.__node_facade = NodeFacade()
         self.__group_facade = GroupFacade()
         self.__nodes = None
@@ -93,9 +94,7 @@ class AgentTool(object):
         self.__reactor.callFromThread(self.__event.set)
         self.__event.wait()
 
-    def __on_request_result(self, response):
-        print("Got response: {}".format(response))
-        return True
+
 
     def __do_request(self, host, f_name, cli_args, f_args):
         '''
@@ -110,14 +109,16 @@ class AgentTool(object):
         method = f_args[0]
 
         if cli_args:
-            for a_port, u_name, u_pass in self.__group_facade.get_nodes_as_tuples(cli_args[0]):
+            for a_port, u_name, u_pass, g_name in self.__group_facade.get_nodes_as_tuples(cli_args[0]):
                 self.__do__(host=host, port=a_port, fname=f_name,
                             method=method, username=u_name, user_pass=u_pass)
         elif self.__current_node.agent_host is not None:
             self.__do__(host=host, port=self.__current_node.agent_host, fname=f_name,
-                        method=method, username="agent", user_pass="pass")
+                        method=method, username=self.__current_node.agent_username,
+                        user_pass=self.__current_node.agent_password)
         else:
-            print 'No node selected, use <set_curent_node> to choose one.'
+            print 'No current node selected, ' \
+                  'use <set_curent_node> to choose one.'
 
     def __do__(self, host, port, fname, method, username, user_pass):
         '''
@@ -143,14 +144,18 @@ class AgentTool(object):
 
         @chained_req.addErrback
         def on_error(failure):
-            print 'Got failure: ', failure
-            return failure
+            print("\n%s%s:%s >> %s%s." % (Fore.YELLOW, host, str(port), Fore.RED, repr(failure)))
+            return False
 
         @chained_req.addCallback
         def on_result(response):
             done = Deferred()
-            done.addCallback(self.__on_request_result)
-            response.deliverBody(BeginningPrinter(done))
+            done.addCallback(__on_request_result)
+            response.deliverBody(RequestBodyReader(done))
+
+        def __on_request_result(response):
+            print("\n%s%s:%s >> %s%s." % (Fore.YELLOW, host, str(port), Fore.GREEN, response))
+            return True
 
     def list_nodes(self, group_name=None):
         '''
@@ -159,13 +164,14 @@ class AgentTool(object):
         '''
         if group_name:
             t = self.__group_facade.get_nodes_as_tuples(group_name)
-            nodes = [n[3] for n in t]
-            return nodes
+            node_names = [n[3] for n in t]
         else:
             self.__nodes = self.__node_facade.all()
             nodes = json.loads(self.__nodes.to_json())
             node_names = [node['name'] for node in nodes]
-            return node_names
+        for nn in node_names:
+            print "\n%s%s" % (Fore.YELLOW, nn)
+
 
     def list_groups(self):
         '''
@@ -175,7 +181,8 @@ class AgentTool(object):
         self.__groups = self.__group_facade.all()
         groups = json.loads(self.__groups.to_json())
         group_names = [group['name'] for group in groups]
-        return group_names
+        for gg in group_names:
+            print "\n%s%s" % (Fore.YELLOW, gg)
 
     def remove_node(self, node_name):
         '''
@@ -229,7 +236,7 @@ class AgentTool(object):
             self.__current_node = self.__node_facade.find_one_based_on_field('name', node_name)
 
         if self.__current_node:
-            print "You have selected node: %s" % self.__current_node.name
+            print "You have selected node: %s." % self.__current_node.name
         else:
             print "Node %s not found." % node_name
 
@@ -346,7 +353,7 @@ class TimedDeferred(defer.Deferred):
             return basic_str.format('completed, %.1fs spare' % remaining)
 
 
-class BeginningPrinter(Protocol):
+class RequestBodyReader(Protocol):
 
     def __init__(self, finished):
         self.finished = finished

@@ -18,7 +18,7 @@ def defer_to_thread(function):
 
 @contextmanager
 def restore_signal_handlers(*signal_names):
-    '''
+    """
     This contextmanager restores the signal handling callback
     that was registered (via. signal.signal(SIGCODE, callback))
     before the code in the with block was run.
@@ -26,7 +26,7 @@ def restore_signal_handlers(*signal_names):
     This contextmanager reattaches the original signal callback when
     running code that changes specific signals that
     we do not have control over, e.g.  reactor._handleSignals()
-    '''
+    """
     # Store the original callback for the signal_names on __enter__
     signal_handlers = {}
     for signal_name in signal_names:
