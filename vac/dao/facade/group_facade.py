@@ -58,5 +58,5 @@ class GroupFacade(BaseFacade):
 
     def get_nodes_as_tuples(self, group_name):
         group = self.find_one_based_on_field('name', group_name)
-        nodes = [(n.agent_host, n.agent_username, n.agent_password) for n in group.caches]
+        nodes = [(n.agent_host, n.agent_username, n.agent_password, n.name) for n in group.caches]
         return nodes

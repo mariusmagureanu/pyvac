@@ -152,15 +152,20 @@ class AgentTool(object):
             done.addCallback(self.__on_request_result)
             response.deliverBody(BeginningPrinter(done))
 
-    def list_nodes(self):
+    def list_nodes(self, group_name=None):
         '''
 
         :return:
         '''
-        self.__nodes = self.__node_facade.all()
-        nodes = json.loads(self.__nodes.to_json())
-        node_names = [node['name'] for node in nodes]
-        return node_names
+        if group_name:
+            t = self.__group_facade.get_nodes_as_tuples(group_name)
+            nodes = [n[3] for n in t]
+            return nodes
+        else:
+            self.__nodes = self.__node_facade.all()
+            nodes = json.loads(self.__nodes.to_json())
+            node_names = [node['name'] for node in nodes]
+            return node_names
 
     def list_groups(self):
         '''

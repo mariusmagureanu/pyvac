@@ -16,24 +16,20 @@ app.register_blueprint(user_blueprint, url_prefix='/user')
 app.register_blueprint(root_blueprint)
 
 
-def run_flask():
+def __run_flask():
     app.run(host='0.0.0.0', port=8182, threaded=True, debug=False)
 
-p = Process(target=run_flask)
+flask_proc = Process(target=__run_flask)
 
 
 def start_flask():
-    p.name = "PyVacFlask"
-    p.daemon = True
-    p.start()
+    flask_proc.name = "PyVacFlask"
+    flask_proc.daemon = True
+    flask_proc.start()
 
 
 def stop_flask():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
-    p.terminate()
-    p.join(timeout=2)
+    flask_proc.terminate()
+    flask_proc.join(timeout=2)
 
 

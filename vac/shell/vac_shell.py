@@ -3,10 +3,8 @@ __author__ = 'mariusmagureanu'
 import traceback
 import logging
 import code
-import vac
-from vac.web.varnish.agent_tool import AgentTool
+import vac.web.varnish.agent_tool
 from engine import get_engine, run
-
 
 log = logging.getLogger('VacShell')
 
@@ -37,7 +35,7 @@ class VacShell(object):
                 # TODO: restrict user namespace to just 'vac' etc
                 try:
                     import IPython.Shell
-                    shell = IPython.Shell.IPShellEmbed(argv='')
+                    shell = IPython.Shell.IPShellEmbed(argv='', user_ns='vac.web.varnish.agent_tool')
                 except ImportError:
                     # IPython 0.11+
                     # - Note: ipython 0.11 prints out a proper "Python..."

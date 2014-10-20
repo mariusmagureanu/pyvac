@@ -58,7 +58,7 @@ class Engine(object):
     def teardown_logging(self):
         loggers = [logging.root]
         if self.config['store_logs']:
-            log.info('TNG logdirectory={!r}'.format(
+            log.info('VAC logdirectory={!r}'.format(
                 os.path.abspath(self.config['logdirectory'])))
             targeted_loggers = [logging.getLogger(logname) for logname in (
                 'statemachine', 'protocol', 'vac', 'backend',
@@ -94,7 +94,7 @@ class Engine(object):
         if self.running:
             return
         self.initialise_logging()
-        log.info('Starting Vac Pi version=%r', self.config.get_tng_version())
+        log.info('Starting Vac Pi version=%r', self.config.get_vac_version())
         self.running = True
         start_flask()
 
@@ -111,7 +111,7 @@ class Engine(object):
             sys.exit(self._exit_status)
 
     def get_metadata_dict(self):
-        version_info = self.config.get_tng_version_info()
+        version_info = self.config.get_vac_version_info()
         return {
             'version': version_info.get('version', 'Unknown'),
             'date': version_info.get('date', 'Unknown'),

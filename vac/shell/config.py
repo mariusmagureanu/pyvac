@@ -66,18 +66,9 @@ class EngineConfig(object):
             config['loglevel'] = format_loglevel(config['loglevel'])
         return config
 
-    def load_user_config(self, config_file=None):
-        pass
-        '''Loads default user configuration.
-
-        :parameter config_file: user config file (default: "~/.vacpi")
-        '''
-        #user_defaults = UserConfig(config_file).get_tng_config()
-        #self.update_current_config(user_defaults)
-
     def update_current_config(self, runtime_config):
-        '''Merge the config given to tng.run by the user
-        with the default/user specified (tngrc) config values
+        '''Merge the config given to vac.run by the user
+        with the default/user specified (vacrc) config values
         '''
         if not runtime_config:
             runtime_config = {}
@@ -93,7 +84,7 @@ class EngineConfig(object):
                     time.strftime('%Y%m%d-%H%M%S')]
         return os.path.join(*logpaths)
 
-    def get_tng_version_info(self):
+    def get_vac_version_info(self):
         '''Returns a dictionary of VAC Pi version info.
 
         For example dict(version='v3.1.7-2-gdf4e1ec',
@@ -108,8 +99,8 @@ class EngineConfig(object):
                     version='Unknown', date='Unknown')
         return self['vacpi_version_info']
 
-    def get_tng_version(self):
+    def get_vac_version(self):
         '''Returns the VAC version (or 'Unknown' if no version available).
         '''
-        version_info = self.get_tng_version_info()
+        version_info = self.get_vac_version_info()
         return version_info
