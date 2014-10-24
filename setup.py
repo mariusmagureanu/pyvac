@@ -48,7 +48,7 @@ setup(
     classifiers=[],
     keywords='',
     author='Marius Magureanu',
-    author_email='marius@varnish-software.com',
+    author_email='marius.developer@gmail.com',
     url='www.google.com',
     license='Some license',
     packages=find_packages(),
