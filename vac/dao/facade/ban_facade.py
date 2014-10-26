@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from vac.dao.entities.model import Ban
-from base_facade import BaseFacade
+from .base_facade import BaseFacade
 
 
 class BanFacade(BaseFacade):

@@ -1,5 +1,5 @@
 __author__ = 'mariusmagureanu'
-from base_test import BaseDaoTest
+from .base_test import BaseDaoTest
 from vac.dao.entities.model import Snippet
 from vac.dao.facade.snippet_facade import SnippetFacade
 
@@ -10,7 +10,12 @@ class SnippetDaoTest(BaseDaoTest):
 
     def setUp(self):
         super(self.__class__, self).setUp()
-        super(self.__class__, self)._set_model(Snippet(content="Some funky content"), SnippetFacade())
+        super(
+            self.__class__,
+            self)._set_model(
+            Snippet(
+                content="Some funky content"),
+            SnippetFacade())
 
     def tearDown(self):
         super(self.__class__, self).tearDown()

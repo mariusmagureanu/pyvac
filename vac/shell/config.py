@@ -20,8 +20,10 @@ def format_loglevel(level):
 
 
 class EngineConfig(object):
+
     '''An object that holds the config for the current VAC session.
     '''
+
     def __init__(self):
         self._config_data = {
             'defines': {},
@@ -29,7 +31,7 @@ class EngineConfig(object):
             'logdirectory': None,
             'overwrite_logdir': False,
             'loglevel': logging.INFO,
-            'vacpi_version_info': None,
+            'vacpi_version_info': '0.1',
             'crash_on_boot': True,
             'setupfile': None,
             'runfile': None,
@@ -37,12 +39,11 @@ class EngineConfig(object):
             'has_runfile': False,
             'run_mode': 'vanilla',
             'store_logs': True,
-            'logbase': '~/workspace',
+            'logbase': 'vac_log',
             'username': 'marius',
             'shell': 'ipython',
             'color_output': True,
         }
-        #self.load_user_config()
 
     def __getitem__(self, key):
         if key == 'loglevel':
@@ -76,11 +77,10 @@ class EngineConfig(object):
         # expand out ~ to user's home
         self['logbase'] = os.path.expanduser(self['logbase'])
         if self['store_logs'] and not self['desired_logdir']:
-            self['desired_logdir'] = self.generate_logdirectory_name()
+            self['desired_logdir'] = self.generate_log_directory_name()
 
-    def generate_logdirectory_name(self):
-        logpaths = [self['logbase'],
-                    self['username'],
+    def generate_log_directory_name(self):
+        logpaths = [self['logbase'], self['username'],
                     time.strftime('%Y%m%d-%H%M%S')]
         return os.path.join(*logpaths)
 
@@ -92,7 +92,7 @@ class EngineConfig(object):
         '''
         if self['vacpi_version_info'] is None:
             try:
-                self['vacpi_version_info'] = '1.0'
+                self['vacpi_version_info'] = '0.1'
             except Exception as e:
                 log.debug('Failed to fetch vacpi git revision: %s', e)
                 self['vacpi_version_info'] = dict(

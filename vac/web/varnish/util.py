@@ -37,6 +37,6 @@ def restore_signal_handlers(*signal_names):
         # Code in the with block can change the signal callback:
         yield signal_handlers
     finally:
-        #Restore the original callback for the signal on __exit__
+        # Restore the original callback for the signal on __exit__
         for signal_code, handler in signal_handlers.iteritems():
             signal.signal(signal_code, handler)

@@ -28,7 +28,10 @@ class BaseDaoTest(TestCase):
 
     def test_save_entity(self):
         self._facade.save(self._entity)
-        self.assertIsNotNone(self._facade.find_one_based_on_field('id', self._entity.id))
+        self.assertIsNotNone(
+            self._facade.find_one_based_on_field(
+                'id',
+                self._entity.id))
 
     def test_count(self):
         self._facade.save(self._entity)

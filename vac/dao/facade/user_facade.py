@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from vac.dao.entities.model import User
-from base_facade import BaseFacade
+from .base_facade import BaseFacade
 
 
 class UserFacade(BaseFacade):
@@ -42,4 +42,6 @@ class UserFacade(BaseFacade):
         :param password:
         :return:
         """
-        self.__model__.objects(name=user_name).update_one(set__password=password)
+        self.__model__.objects(
+            name=user_name).update_one(
+            set__password=password)

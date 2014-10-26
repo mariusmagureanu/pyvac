@@ -1,5 +1,5 @@
 __author__ = 'mariusmagureanu'
-from base_facade import BaseFacade
+from .base_facade import BaseFacade
 
 
 class GroupFacade(BaseFacade):
@@ -17,7 +17,7 @@ class GroupFacade(BaseFacade):
         :param group_name: The name of the group.
         :return:
         """
-        from node_facade import NodeFacade
+        from .node_facade import NodeFacade
         node_facade = NodeFacade()
         node = node_facade.find_one_based_on_field('name', cache_name)
         group = self.find_one_based_on_field('name', group_name)
@@ -52,7 +52,7 @@ class GroupFacade(BaseFacade):
         :param group_name: Group name.
         :return:
         """
-        from node_facade import NodeFacade
+        from .node_facade import NodeFacade
         node_facade = NodeFacade()
         node = node_facade.find_one_based_on_field('name', cache_name)
         group = self.find_one_based_on_field('name', group_name)
@@ -85,5 +85,9 @@ class GroupFacade(BaseFacade):
         :return:
         """
         group = self.find_one_based_on_field('name', group_name)
-        nodes = [(n.agent_host, n.agent_username, n.agent_password, n.name) for n in group.caches]
+        nodes = [
+            (n.agent_host,
+             n.agent_username,
+             n.agent_password,
+             n.name) for n in group.caches]
         return nodes

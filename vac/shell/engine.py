@@ -5,11 +5,13 @@ import logging
 import colorama
 
 from cStringIO import StringIO
-from config import EngineConfig
+from .config import EngineConfig
 from vac.dao.mongo.connector import connect_to_mongo
 from vac.web.base_resource import start_flask, stop_flask
 
-
+logging.basicConfig(filename='vac.log',
+                    level=logging.INFO,
+                    filemode='w')
 log = logging.getLogger('vac')
 
 
@@ -65,7 +67,7 @@ class Engine(object):
                 'feedback')]
             loggers.extend(targeted_loggers)
         # This is the last moment a log will be available:
-        log.info('Goodbye!')
+        logging.info('Goodbye!')
         for logger in loggers:
             while logger.handlers:
                 logger.removeHandler(logger.handlers[0])
@@ -93,8 +95,9 @@ class Engine(object):
         self.config.update_current_config(runtime_config)
         if self.running:
             return
-        self.initialise_logging()
-        log.info('Starting Vac Pi version=%r', self.config.get_vac_version())
+        # self.initialise_logging()
+
+        log.info('Starting Vac Pi version=0.1')
         self.running = True
         start_flask()
 

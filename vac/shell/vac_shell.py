@@ -1,12 +1,12 @@
 __author__ = 'mariusmagureanu'
-#!/usr/bin/env python
+# !/usr/bin/env python
 import traceback
 import logging
 import code
 import vac.web.varnish.agent_tool
-from engine import get_engine, run
+from .engine import get_engine, run
 
-log = logging.getLogger('VacShell')
+log = logging.getLogger('vac')
 
 
 class VacShell(object):
@@ -31,11 +31,15 @@ class VacShell(object):
 
         if shell_name == 'ipython':
             self.monkey_patch_ipython_history_manager()
+
             def make_shell():
                 # TODO: restrict user namespace to just 'vac' etc
                 try:
                     import IPython.Shell
-                    shell = IPython.Shell.IPShellEmbed(argv='', user_ns='vac.web.varnish.agent_tool')
+                    shell = IPython.Shell.IPShellEmbed(
+                        argv='',
+                        user_ns='vac.web.varnish.agent_tool')
+                    log.info('shell created.')
                 except ImportError:
                     # IPython 0.11+
                     # - Note: ipython 0.11 prints out a proper "Python..."
@@ -46,6 +50,7 @@ class VacShell(object):
                         shell = InteractiveShellEmbed()
                     except ImportError:
                         return None
+
                 def ipython_shell(header=None, locals_=None):
                     # Note: IPython doesn't default global_ns to anything
                     # sensible so we need to define it or else scoping breaks
@@ -62,6 +67,7 @@ class VacShell(object):
             def make_shell():
                 import bpython
                 shell = bpython.embed
+
                 def bpython_shell(header=None, locals_=None):
                     if locals_ is not None:
                         local_ns.update(locals_)
@@ -79,7 +85,7 @@ class VacShell(object):
                 log.warn('Unable to create a Vac shell using %s; falling '
                          'back on the default Python shell' % shell_name)
                 shell = make_default_shell()
-
+        log.info("Shell created.")
         return shell
 
     def monkey_patch_ipython_history_manager(self):
@@ -109,7 +115,7 @@ class VacShell(object):
             if self.config['runfile'] is not None:
                 try:
                     pass
-                    #run_file(self.config['runfile'])
+                    # run_file(self.config['runfile'])
                 except Exception as e:
                     traceback.print_exc(e)
             shell = self.get_shell(self.config['shell'])

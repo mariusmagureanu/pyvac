@@ -1,5 +1,5 @@
 __author__ = 'mariusmagureanu'
-from base_test import BaseDaoTest
+from .base_test import BaseDaoTest
 from vac.dao.facade.user_facade import UserFacade
 from vac.dao.entities.model import User
 

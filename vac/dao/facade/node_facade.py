@@ -1,6 +1,6 @@
 __author__ = 'mariusmagureanu'
 from vac.dao.entities.model import Node
-from base_facade import BaseFacade
+from .base_facade import BaseFacade
 
 
 class NodeFacade(BaseFacade):
@@ -17,4 +17,3 @@ class NodeFacade(BaseFacade):
             document.group.caches.remove(document)
             document.group.save()
         self.__model__.delete(document)
-

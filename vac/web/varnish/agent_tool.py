@@ -1,15 +1,18 @@
 __author__ = 'mariusmagureanu'
 from twisted.internet import defer, reactor
 from twisted.web.client import Agent
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred, succeed
 from twisted.internet.protocol import Protocol
-from colorama import init, Fore, Back, Style
+from twisted.web.iweb import IBodyProducer
+from colorama import init, Fore
+from zope.interface import implements
 import time
 import crochet
 import json
 import base64
 import threading
 import logging
+import os
 
 log = logging.getLogger('vac')
 request_timeout = 3
@@ -50,37 +53,49 @@ class AgentTool(object):
         self.__event = threading.Event()
         self.__agent = Agent(self.__reactor)
         self.__start_reactor()
+        log.info('agent tool created.')
 
     def __getattr__(self, item):
         if item in self.__agent_functions:
-            function_name, function_args = self.__agent_functions[item]
+            function_name, methods = self.__agent_functions[item]
 
-            def wrapper(*cli_args):
-                return self.__do_request("localhost", function_name, cli_args, function_args)
+            def wrapper(group_name=None, **kwargs):
+                return self.__do_request(
+                    "localhost", function_name, methods[0], group_name, kwargs)
             return wrapper
 
     __agent_functions = dict(
-        ping=('ping', ['GET', str]),
-        direct=('direct', ['POST', str, bool]),
+        ping=('ping', ['GET']),
+        direct=('direct', ['POST']),
         stats=('stats', ['GET']),
-        ban=('ban', ['GET', str]),
-        vcljson=('vcljson/', ['GET', int]),
-        vcl=('vcl', ['GET', int]),
-        vcldeploy=('vcldeploy', ['PUT', int]),
-        vcl1=('vcl', ['GET', int]),
-        param=('param', ['GET', int]),
+        vcljson=('vcljson/', ['GET']),
         start=('start', ['PUT']),
         stop=('stop', ['PUT']),
         paramjson=('paramjson', ['GET']),
         status=('status', ['GET']),
-        panic=('panic', ['GET', str, int]),
+        panic=('panic', ['GET']),
         echo=('echo', ['GET']),
+        version=('version', ['GET']),
+        active_vcl=('vclactive', ['GET']),
+        ban=('ban', ['GET']),
+        log=('log', ['GET']),
+        package_string=('package_string', ['GET']),
         help=('', ['GET']))
 
     def __create_daemon_thread(self, *args, **kwargs):
         t = threading.Thread(*args, **kwargs)
         t.setDaemon(True)
         return t
+
+    def __get_group_or_node(self, item_name):
+        sel_group = [g for g in self.__groups if g.name == item_name]
+        if sel_group:
+            return sel_group[0]
+        sel_node = [n for n in self.__nodes if n.name == item_name]
+        if sel_node:
+            return sel_node[0]
+        else:
+            return None
 
     def __start_reactor(self):
         """
@@ -94,57 +109,60 @@ class AgentTool(object):
         self.__reactor.callFromThread(self.__event.set)
         self.__event.wait()
 
+    def __do_request(self, host, f_name, method, group_name, req_args):
 
-
-    def __do_request(self, host, f_name, cli_args, f_args):
-        '''
-
-        :param host:
-        :param f_name:
-        :param cli_args:
-        :param f_args:
-        :return:
-        '''
-
-        method = f_args[0]
-
-        if cli_args:
-            for a_port, u_name, u_pass, g_name in self.__group_facade.get_nodes_as_tuples(cli_args[0]):
-                self.__do__(host=host, port=a_port, fname=f_name,
-                            method=method, username=u_name, user_pass=u_pass)
-        elif self.__current_node.agent_host is not None:
-            self.__do__(host=host, port=self.__current_node.agent_host, fname=f_name,
-                        method=method, username=self.__current_node.agent_username,
-                        user_pass=self.__current_node.agent_password)
+        if group_name:
+            for a_port, u_name, u_pass, g_name in \
+                    self.__group_facade.get_nodes_as_tuples(group_name):
+                self.__do__(host=host,
+                            port=a_port,
+                            fname=f_name,
+                            method=method,
+                            username=u_name,
+                            user_pass=u_pass,
+                            req_body=req_args)
+        elif self.__current_node:
+            self.__do__(host=host,
+                        port=self.__current_node.agent_host,
+                        fname=f_name,
+                        method=method,
+                        username=self.__current_node.agent_username,
+                        user_pass=self.__current_node.agent_password,
+                        req_body=req_args)
         else:
             print 'No current node selected, ' \
-                  'use <set_curent_node> to choose one.'
+                  'use <set_current_node> to choose one.'
 
-    def __do__(self, host, port, fname, method, username, user_pass):
-        '''
-
-        :param host:
-        :param port:
-        :param fname:
-        :param method:
-        :param username:
-        :param user_pass:
-        :return:
-        '''
+    def __do__(self, host, port, fname, method, username, user_pass,
+               req_body=None):
         from twisted.web.http_headers import Headers
         auth = base64.encodestring("%s:%s" % (username, user_pass))
-        header = "Basic " + auth.strip()
-        headers = {"Authorization": [header]}
+        auth_header = "Basic " + auth.strip()
+        body = None
+
+        if req_body:
+            body = StringProducer(req_body)
+        headers = {
+            "Authorization": [auth_header],
+            'Content-Type': ['application/x-www-form-urlencoded']}
+
         req_defered = self.__agent.request(
             method=method,
             uri="http://%s:%s/%s" % (host, str(port), fname),
-            headers=Headers(headers))
+            headers=Headers(headers),
+            bodyProducer=body)
 
         chained_req = _chain_timeout(req_defered, request_timeout)
 
         @chained_req.addErrback
         def on_error(failure):
-            print("\n%s%s:%s >> %s%s." % (Fore.YELLOW, host, str(port), Fore.RED, repr(failure)))
+            print(
+                "\n%s%s:%s>> %s%s." %
+                (Fore.YELLOW,
+                 host,
+                 str(port),
+                    Fore.RED,
+                    str(failure)))
             return False
 
         @chained_req.addCallback
@@ -154,8 +172,47 @@ class AgentTool(object):
             response.deliverBody(RequestBodyReader(done))
 
         def __on_request_result(response):
-            print("\n%s%s:%s >> %s%s." % (Fore.YELLOW, host, str(port), Fore.GREEN, response))
+            print(
+                "\n%s%s:%s>> %s%s." %
+                (Fore.YELLOW,
+                 host,
+                 str(port),
+                    Fore.GREEN,
+                    response))
             return True
+
+    def set_param(self, param_name, param_value, group_name=None):
+        method = 'PUT'
+        f_name = "%s/%s" % ('param', param_name)
+        self.__do_request('localhost', f_name, method, group_name, param_value)
+
+    def get_param(self, param_name, group_name=None):
+        method = 'GET'
+        f_name = "%s/%s" % ('param', param_name)
+        self.__do_request('localhost', f_name, method, group_name, None)
+
+    def do_ban(self, ban_exp, group_name=None):
+        method = 'POST'
+        f_name = 'ban'
+        self.__do_request('localhost', f_name, method, group_name, ban_exp)
+
+    def save_vcl(self, vcl_file, group_name=None):
+        method = 'PUT'
+        assert (os.path.isfile(vcl_file))
+        vcl_name = os.path.basename(vcl_file).split('.', 1)[0]
+        vcl_content = open(vcl_file, 'r').read()
+        f_name = "%s/%s" % ('vcl', vcl_name)
+        self.__do_request('localhost', f_name, method, group_name, vcl_content)
+
+    def delete_vcl(self, vcl_name, group_name=None):
+        method = 'DELETE'
+        f_name = "%s/%s" % ('vcl', vcl_name)
+        self.__do_request('localhost', f_name, method, group_name, None)
+
+    def deploy_vcl(self, vcl_name, group_name=None):
+        method = 'PUT'
+        f_name = "%s/%s" % ('vcldeploy', vcl_name)
+        self.__do_request('localhost', f_name, method, group_name, None)
 
     def list_nodes(self, group_name=None):
         '''
@@ -171,7 +228,6 @@ class AgentTool(object):
             node_names = [node['name'] for node in nodes]
         for nn in node_names:
             print "\n%s%s" % (Fore.YELLOW, nn)
-
 
     def list_groups(self):
         '''
@@ -233,7 +289,9 @@ class AgentTool(object):
             if sel_node:
                 self.__current_node = sel_node[0]
         else:
-            self.__current_node = self.__node_facade.find_one_based_on_field('name', node_name)
+            self.__current_node = self.__node_facade.find_one_based_on_field(
+                'name',
+                node_name)
 
         if self.__current_node:
             print "You have selected node: %s." % self.__current_node.name
@@ -255,7 +313,9 @@ class AgentTool(object):
         :param group_name:
         :return:
         '''
-        self.__group_facade.add_cache(cache_name=node_name, group_name=group_name)
+        self.__group_facade.add_cache(
+            cache_name=node_name,
+            group_name=group_name)
 
     def remove_node_from_group(self, node_name, group_name):
         '''
@@ -264,7 +324,9 @@ class AgentTool(object):
         :param group_name:
         :return:
         '''
-        self.__group_facade.remove_cache(cache_name=node_name, group_name=group_name)
+        self.__group_facade.remove_cache(
+            cache_name=node_name,
+            group_name=group_name)
 
     def remove_all_nodes_in_group(self, group_name):
         '''
@@ -313,7 +375,8 @@ class TimedDeferred(defer.Deferred):
             self.msg = msg
         self._timeout_seconds = seconds
         self._timer = reactor.callLater(self._timeout_seconds,
-                                        lambda: self.called or self._do_timeout())
+                                        lambda: self.called or
+                                        self._do_timeout())
         return self._timer
 
     def _do_timeout(self):
@@ -370,3 +433,21 @@ class RequestBodyReader(Protocol):
     def connectionLost(self, reason):
         self.finished.callback(self.total_response)
         return reason
+
+
+class StringProducer(object):
+    implements(IBodyProducer)
+
+    def __init__(self, body):
+        self.body = body
+        self.length = len(body)
+
+    def startProducing(self, consumer):
+        consumer.write(self.body)
+        return succeed(None)
+
+    def pauseProducing(self):
+        pass
+
+    def stopProducing(self):
+        pass

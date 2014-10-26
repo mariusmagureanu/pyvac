@@ -18,7 +18,11 @@ class Ban(Document, BaseEntity):
 
 
 class Group(Document, BaseEntity):
-    name = StringField(max_length=255, required=True, default='Entity_Name', unique=True)
+    name = StringField(
+        max_length=255,
+        required=True,
+        default='Entity_Name',
+        unique=True)
     description = StringField(max_length=255, required=False)
     caches = ListField(ReferenceField('Node'))
 
@@ -31,7 +35,11 @@ class Message(Document, BaseEntity):
 
 
 class Node(Document, BaseEntity):
-    name = StringField(max_length=255, required=True, default='Entity_Name', unique=True)
+    name = StringField(
+        max_length=255,
+        required=True,
+        default='Entity_Name',
+        unique=True)
     description = StringField(max_length=255, required=False)
     agent_host = IntField(required=True)
     agent_username = StringField(max_length=255, required=True)

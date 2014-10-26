@@ -81,6 +81,3 @@ class BaseFacade(object):
 
     def clear_all(self):
         self.__model__.drop_collection()
-
-
-

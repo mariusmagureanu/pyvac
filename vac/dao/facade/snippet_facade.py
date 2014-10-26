@@ -1,5 +1,5 @@
 __author__ = 'mariusmagureanu'
-from base_facade import BaseFacade
+from .base_facade import BaseFacade
 from vac.dao.entities.model import Snippet
 
 
