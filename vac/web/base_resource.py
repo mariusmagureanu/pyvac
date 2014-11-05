@@ -1,9 +1,8 @@
-__author__ = 'mariusmagureanu'
+from vac.web.services.login_resource import login_blueprint
+from vac.web.services.user_resorce import user_blueprint
 from flask import Flask
+from vac.web.services.root_resource import root_blueprint
 from multiprocessing import Process
-from unrestricted.login_resource import login_blueprint
-from unrestricted.root_resource import root_blueprint
-from restricted.user_resorce import user_blueprint
 import logging
 
 log = logging.getLogger('vac')
@@ -18,7 +17,8 @@ app.register_blueprint(root_blueprint)
 
 def __run_flask():
     log.info("Starting Flask...")
-    app.run(host='0.0.0.0', port=8182, threaded=True, debug=False)
+    app.secret_key = 'my credit card pin number, ofcourse.'
+    app.run(host='0.0.0.0', port=8182, threaded=True)
 
 flask_proc = Process(target=__run_flask)
 

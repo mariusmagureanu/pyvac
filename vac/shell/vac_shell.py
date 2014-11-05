@@ -89,13 +89,6 @@ class VacShell(object):
         return shell
 
     def monkey_patch_ipython_history_manager(self):
-        '''bug https://github.com/ipython/ipython/issues/680
-        IPython 0.11 will re-initialise the history manager's sqlite3 db
-        connection when displaying exception tracebacks (in our TNG Pi
-        thread), then try to use it on Python exit which sqlite3 rejects
-        unless we use
-            check_same_thread=False
-        '''
         try:
             from IPython.core.history import HistoryManager
             import sqlite3

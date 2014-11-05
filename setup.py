@@ -34,7 +34,8 @@ install_requires = [
     'netifaces',
     'crochet>=1.0.0',
     'mongoengine',
-    'ipython'
+    'ipython',
+    'wtforms'
 ]
 
 
