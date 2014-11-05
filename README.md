@@ -15,7 +15,7 @@ This README would normally document whatever steps are necessary to get your app
 
 ### How do I get set up? ###
 
-
+      sudo pip install fabric
       sudo fab install
   
   If the installation has been succesfull, open a terminal and type vac.
